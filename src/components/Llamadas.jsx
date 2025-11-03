@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Phone, Mic, PhoneOff, Bot } from 'lucide-react';
 
 // URL del endpoint de tu backend (Lambda). Reemplázala por tu URL real.
-const AWS_LAMBDA_ENDPOINT = 'https://tu-endpoint-de-lambda.amazonaws.com/prod/audio-handler';
+const AWS_LAMBDA_ENDPOINT = 'https://bgcqzdreehrcyr5yb4kb7ojueq0uhprn.lambda-url.eu-west-1.on.aws/';
 
 const Llamadas = () => {
   const [callStatus, setCallStatus] = useState('idle'); // idle, active, connecting, ended
