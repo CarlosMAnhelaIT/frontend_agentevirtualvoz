@@ -1,3 +1,4 @@
+import Llamadas from './components/Llamadas.jsx';
 import React, { useState } from 'react';
 import './index.css';
 import { 
@@ -49,7 +50,9 @@ export default function App() {
 
         {/* Área de contenido (cambia según la vista) */}
         <main className="flex-1 overflow-y-auto p-6 md:p-8 lg:p-10">
-          {view === 'metrics' ? <MetricsDashboard /> : <TicketsView />}
+          {view === 'metrics' && <MetricsDashboard />}
+          {view === 'tickets' && <TicketsView />}
+          {view === 'llamadas' && <Llamadas />}
         </main>
       </div>
     </div>
@@ -96,6 +99,11 @@ function Sidebar({ currentView, setView }) {
           viewName="tickets"
           icon={Ticket}
           label="Tickets"
+        />
+        <NavButton
+          viewName="llamadas"
+          icon={Phone}
+          label="Llamadas"
         />
       </nav>
       <div className="p-4 border-t border-gray-700">
