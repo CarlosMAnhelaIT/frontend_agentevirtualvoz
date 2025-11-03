@@ -27,7 +27,7 @@ const ChatBubble = ({ role, text }) => {
 };
 
 // --- Componente Principal de Llamadas ---
-const Llamadas = () => {
+const Llamadas = ({ agentName, systemPrompt }) => {
     const [callStatus, setCallStatus] = useState('idle');
     const [isListening, setIsListening] = useState(false);
     const [agentStatus, setAgentStatus] = useState('Lista');
@@ -103,7 +103,7 @@ const Llamadas = () => {
             const response = await fetch(AWS_LAMBDA_ENDPOINT, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text, history }),
+                body: JSON.stringify({ text, history, systemPrompt }),
             });
 
             if (!response.ok) throw new Error(`Server error: ${response.status}`);
@@ -161,7 +161,7 @@ const Llamadas = () => {
                 <div className="flex items-center gap-3">
                     <div className="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center"><Bot size={26} className="text-white"/></div>
                     <div>
-                        <h2 className="text-lg font-semibold text-gray-800">AseguraIA</h2>
+                <h2 className="text-2xl font-bold">{agentName}</h2>
                         <div className="flex items-center gap-2">
                             {getStatusIndicator()}
                             <p className="text-sm text-gray-500">{agentStatus}</p>
