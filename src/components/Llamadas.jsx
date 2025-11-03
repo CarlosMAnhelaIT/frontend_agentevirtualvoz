@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Phone, Mic, PhoneOff, Bot } from 'lucide-react';
+import { Phone, Mic, PhoneOff, Bot, User } from 'lucide-react';
 
 const AWS_LAMBDA_ENDPOINT = 'https://bgcqzdreehrcyr5yb4kb7ojueq0uhprn.lambda-url.eu-west-1.on.aws/';
 
@@ -10,8 +10,23 @@ if (SpeechRecognition) {
     recognition.continuous = false;
     recognition.lang = 'es-ES';
     recognition.interimResults = false;
-} 
+}
 
+// --- Componente de Burbuja de Chat ---
+const ChatBubble = ({ role, text }) => {
+    const isUser = role === 'user';
+    return (
+        <div className={`flex items-start gap-3 my-4 ${isUser ? 'justify-end' : 'justify-start'}`}>
+            {!isUser && <div className="flex-shrink-0 w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center"><Bot size={22} className="text-white"/></div>}
+            <div className={`p-3 rounded-2xl max-w-xs md:max-w-md transition-all duration-300 ${isUser ? 'bg-blue-500 text-white rounded-br-none' : 'bg-white text-gray-800 rounded-bl-none shadow-sm'}`}>
+                <p className="text-sm">{text}</p>
+            </div>
+            {isUser && <div className="flex-shrink-0 w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center"><User size={22} className="text-gray-600"/></div>}
+        </div>
+    );
+};
+
+// --- Componente Principal de Llamadas ---
 const Llamadas = () => {
     const [callStatus, setCallStatus] = useState('idle');
     const [isListening, setIsListening] = useState(false);
@@ -20,7 +35,6 @@ const Llamadas = () => {
     const audioPlayerRef = useRef(new Audio());
     const transcriptContainerRef = useRef(null);
 
-    // Scroll automático del historial
     useEffect(() => {
         if (transcriptContainerRef.current) {
             transcriptContainerRef.current.scrollTop = transcriptContainerRef.current.scrollHeight;
@@ -40,16 +54,13 @@ const Llamadas = () => {
 
         recognition.onend = () => {
             setIsListening(false);
-            if (callStatus === 'active') {
-                 setAgentStatus('Lista para hablar');
-            }
+            if (callStatus === 'active') setAgentStatus('Lista para hablar');
         };
 
         recognition.onresult = (event) => {
             const transcript = event.results[event.results.length - 1][0].transcript.trim();
             if (transcript) {
                 setAgentStatus('Pensando...');
-                // Añadir el texto del usuario al historial inmediatamente
                 setHistory(prev => [...prev, { role: 'user', text: transcript }]);
                 sendTextToBackend(transcript);
             }
@@ -60,22 +71,20 @@ const Llamadas = () => {
             setAgentStatus('Error de Mic');
         };
 
-    }, [callStatus, history]); // Añadimos history a las dependencias
+    }, [callStatus, history]);
 
     const handleCall = () => {
         if (!SpeechRecognition) {
             alert("Tu navegador no soporta la API de reconocimiento de voz. Por favor, usa Chrome o Edge.");
             return;
         }
-        setHistory([]); // Limpiar historial al iniciar nueva llamada
+        setHistory([]);
         setCallStatus('active');
         setAgentStatus('Lista para hablar');
     };
 
     const handleHangUp = () => {
-        if (isListening) {
-            recognition.stop();
-        }
+        if (isListening) recognition.stop();
         setCallStatus('ended');
         setAgentStatus('Llamada finalizada');
         setTimeout(() => {
@@ -85,32 +94,24 @@ const Llamadas = () => {
     };
 
     const toggleListening = () => {
-        if (isListening) {
-            recognition.stop();
-        } else {
-            recognition.start();
-        }
+        if (isListening) recognition.stop();
+        else recognition.start();
     };
 
     const sendTextToBackend = async (text) => {
         try {
             const response = await fetch(AWS_LAMBDA_ENDPOINT, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ text: text, history: history }), // Enviar historial
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text, history }),
             });
 
             if (!response.ok) throw new Error(`Server error: ${response.status}`);
 
-            const responseData = await response.json(); // Esperar respuesta JSON
+            const responseData = await response.json();
 
             if (responseData.text && responseData.audio) {
-                // Añadir la respuesta del agente al historial
                 setHistory(prev => [...prev, { role: 'model', text: responseData.text }]);
-                
-                // Convertir base64 a blob y reproducir
                 const audioBlob = await (await fetch(`data:audio/mpeg;base64,${responseData.audio}`)).blob();
                 playAgentResponse(audioBlob);
             } else {
@@ -125,69 +126,76 @@ const Llamadas = () => {
 
     const playAgentResponse = (audioBlob) => {
         const audioUrl = URL.createObjectURL(audioBlob);
-        const audioPlayer = audioPlayerRef.current;
-        
-        audioPlayer.src = audioUrl;
-        audioPlayer.play();
-        
+        audioPlayerRef.current.src = audioUrl;
+        audioPlayerRef.current.play();
         setAgentStatus('Hablando...');
-
-        audioPlayer.onended = () => {
-            setAgentStatus('Lista para hablar');
-        };
+        audioPlayerRef.current.onended = () => setAgentStatus('Lista para hablar');
     };
 
     if (!SpeechRecognition) {
         return (
-             <div className="p-4 m-4 border rounded-lg shadow-lg max-w-md mx-auto bg-red-800 text-white flex flex-col items-center justify-center h-[500px]">
-                <h2 className="text-2xl font-bold">Navegador no Soportado</h2>
-                <p className="mt-4 text-center">Tu navegador no es compatible con la API de Reconocimiento de Voz. Por favor, utiliza Google Chrome o Microsoft Edge.</p>
+            <div className="p-6 m-4 border rounded-lg shadow-lg max-w-lg mx-auto bg-white text-gray-800 flex flex-col items-center justify-center h-[650px]">
+                <h2 className="text-2xl font-bold text-red-600">Navegador no Soportado</h2>
+                <p className="mt-4 text-center text-gray-600">Tu navegador no es compatible con la API de Reconocimiento de Voz. <br/> Por favor, utiliza Google Chrome o Microsoft Edge.</p>
             </div>
         )
     }
 
+    const getStatusIndicator = () => {
+        switch(agentStatus) {
+            case 'Escuchando...':
+                return <div className="w-3 h-3 rounded-full bg-blue-500 animate-pulse"></div>;
+            case 'Hablando...':
+                return <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>;
+            case 'Pensando...':
+                return <div className="w-3 h-3 rounded-full bg-yellow-500 animate-pulse"></div>;
+            default:
+                return <div className="w-3 h-3 rounded-full bg-gray-400"></div>;
+        }
+    };
+
     return (
-        <div className="p-4 m-4 border rounded-lg shadow-lg max-w-md mx-auto bg-gray-800 text-white flex flex-col h-[600px]">
-            {/* Pantalla de Transcripción */}
-            <div ref={transcriptContainerRef} className="flex-grow bg-gray-900/50 rounded-lg p-4 mb-4 overflow-y-auto h-64">
-                {history.map((entry, index) => (
-                    <div key={index} className={`mb-2 ${entry.role === 'user' ? 'text-right' : 'text-left'}`}>
-                        <span className={`inline-block p-2 rounded-lg ${entry.role === 'user' ? 'bg-blue-600' : 'bg-gray-600'}`}>
-                            {entry.text}
-                        </span>
+        <div className="p-4 sm:p-6 border rounded-2xl shadow-2xl max-w-lg mx-auto bg-gray-100 flex flex-col h-[700px] font-sans">
+            {/* Header */}
+            <div className="flex justify-between items-center pb-4 border-b border-gray-200">
+                <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center"><Bot size={26} className="text-white"/></div>
+                    <div>
+                        <h2 className="text-lg font-semibold text-gray-800">AseguraIA</h2>
+                        <div className="flex items-center gap-2">
+                            {getStatusIndicator()}
+                            <p className="text-sm text-gray-500">{agentStatus}</p>
+                        </div>
                     </div>
-                ))}
-                 {isListening && <div className="text-center text-gray-400">...</div>}
-            </div>
-
-            <div className="text-center mb-4">
-                <div className="flex items-center justify-center space-x-2 p-2 bg-gray-700 rounded-full min-w-[150px]">
-                    <Bot size={20} className={agentStatus === 'Hablando...' ? 'text-green-400 animate-pulse' : 'text-gray-400'}/>
-                    <p className="font-mono text-lg">{agentStatus}</p>
                 </div>
-            </div>
-
-            <div className="flex items-center justify-center mb-4">
                 {callStatus === 'active' && (
-                    <button
-                        onClick={toggleListening}
-                        className={`rounded-full w-20 h-20 flex items-center justify-center shadow-xl transition-all duration-200 ${
-                            isListening ? 'bg-red-500 text-white animate-pulse' : 'bg-blue-500 text-white'
-                        }`}
-                        >
-                        <Mic size={32} />
+                    <button onClick={handleHangUp} className="p-2 text-gray-500 hover:bg-red-100 hover:text-red-600 rounded-full transition-colors">
+                        <PhoneOff size={22} />
                     </button>
                 )}
             </div>
 
-            <div className="flex justify-center space-x-8 w-full mt-auto">
-                {callStatus !== 'active' ? (
-                    <button onClick={handleCall} className="bg-green-500 hover:bg-green-600 text-white rounded-full w-20 h-20 flex items-center justify-center shadow-lg transition-transform transform hover:scale-110">
-                        <Phone size={32} />
+            {/* Pantalla de Transcripción */}
+            <div ref={transcriptContainerRef} className="flex-grow p-4 my-4 overflow-y-auto">
+                {history.length === 0 && callStatus === 'active' && (
+                    <div className="text-center text-gray-400 mt-16">
+                        <p>Haz clic en el micrófono para empezar.</p>
+                    </div>
+                )}
+                {history.map((entry, index) => <ChatBubble key={index} role={entry.role} text={entry.text} />)}
+            </div>
+
+            {/* Footer de Controles */}
+            <div className="flex items-center justify-center pt-4">
+                {callStatus === 'active' ? (
+                    <button
+                        onClick={toggleListening}
+                        className={`w-20 h-20 flex items-center justify-center rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105 ${isListening ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'}`}>
+                        <Mic size={32} />
                     </button>
                 ) : (
-                    <button onClick={handleHangUp} className="bg-red-500 hover:bg-red-600 text-white rounded-full w-20 h-20 flex items-center justify-center shadow-lg transition-transform transform hover:scale-110">
-                        <PhoneOff size={32} />
+                    <button onClick={handleCall} className="w-20 h-20 flex items-center justify-center rounded-full bg-green-500 text-white shadow-lg transition-transform transform hover:scale-110">
+                        <Phone size={32} />
                     </button>
                 )}
             </div>
