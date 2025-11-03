@@ -3,6 +3,8 @@ import { useDropzone } from 'react-dropzone';
 import * as pdfjsLib from 'pdfjs-dist';
 import { UploadCloud, FileText, Loader, CheckCircle, XCircle } from 'lucide-react';
 
+const AWS_EMBEDDINGS_LAMBDA_ENDPOINT = 'https://zmpidrmlv5nrwcz3qvrd7gvab40ksyru.lambda-url.eu-west-1.on.aws/';
+
 // Configurar el worker para pdf.js
 pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
@@ -25,14 +27,31 @@ const DocumentationView = ({ uploadedFiles, setUploadedFiles }) => {
                 // Aquí es donde enviarías el texto al backend
                 console.log(`Texto extraído de ${file.name}:`, fullText.substring(0, 200) + '...');
                 
-                // TODO: Implementar la llamada al backend para subir el texto a Pinecone
+                try {
+                    const response = await fetch(AWS_EMBEDDINGS_LAMBDA_ENDPOINT, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ text: fullText, fileName: file.name }),
+                    });
 
-                // Actualizar estado en el frontend
-                setUploadedFiles(prev => [...prev, { name: file.name, status: 'completed' }]);
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(`Server error: ${response.status} - ${errorData.body}`);
+                    }
 
-            } catch (error) {
-                console.error("Error procesando el PDF:", error);
-                setUploadedFiles(prev => [...prev, { name: file.name, status: 'failed' }]);
+                    // Actualizar estado en el frontend a completado
+                    setUploadedFiles(prev => prev.map(f => f.name === file.name ? { ...f, status: 'completed' } : f));
+
+                } catch (backendError) {
+                    console.error("Error enviando texto al backend:", backendError);
+                    setUploadedFiles(prev => prev.map(f => f.name === file.name ? { ...f, status: 'failed' } : f));
+                }
+
+            } catch (pdfError) {
+                console.error("Error procesando el PDF:", pdfError);
+                setUploadedFiles(prev => prev.map(f => f.name === file.name ? { ...f, status: 'failed' } : f));
             }
         };
     };
