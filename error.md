@@ -1,207 +1,31 @@
---- MÉTODOS DISPONIBLES EN EL CLIENTE TRANSCRIBE ---
-2025-11-03T11:55:00.568Z
-_PY_TO_OP_NAME
-2025-11-03T11:55:00.568Z
-__class__
-2025-11-03T11:55:00.568Z
-__delattr__
-2025-11-03T11:55:00.568Z
-__dict__
-2025-11-03T11:55:00.568Z
-__dir__
-2025-11-03T11:55:00.568Z
-__doc__
-2025-11-03T11:55:00.568Z
-__eq__
-2025-11-03T11:55:00.568Z
-__format__
-2025-11-03T11:55:00.568Z
-__ge__
-2025-11-03T11:55:00.568Z
-__getattr__
-2025-11-03T11:55:00.568Z
-__getattribute__
-2025-11-03T11:55:00.568Z
-__getstate__
-2025-11-03T11:55:00.568Z
-__gt__
-2025-11-03T11:55:00.568Z
-__hash__
-2025-11-03T11:55:00.568Z
-__init__
-2025-11-03T11:55:00.568Z
-__init_subclass__
-2025-11-03T11:55:00.568Z
-__le__
-2025-11-03T11:55:00.568Z
-__lt__
-2025-11-03T11:55:00.568Z
-__module__
-2025-11-03T11:55:00.568Z
-__ne__
-2025-11-03T11:55:00.568Z
-__new__
-2025-11-03T11:55:00.568Z
-__reduce__
-2025-11-03T11:55:00.568Z
-__reduce_ex__
-2025-11-03T11:55:00.568Z
-__repr__
-2025-11-03T11:55:00.568Z
-__setattr__
-2025-11-03T11:55:00.568Z
-__sizeof__
-2025-11-03T11:55:00.568Z
-__str__
-2025-11-03T11:55:00.568Z
-__subclasshook__
-2025-11-03T11:55:00.568Z
-__weakref__
-2025-11-03T11:55:00.568Z
-_cache
-2025-11-03T11:55:00.568Z
-_client_config
-2025-11-03T11:55:00.568Z
-_convert_to_request_dict
-2025-11-03T11:55:00.568Z
-_emit_api_params
-2025-11-03T11:55:00.568Z
-_endpoint
-2025-11-03T11:55:00.568Z
-_exceptions
-2025-11-03T11:55:00.568Z
-_exceptions_factory
-2025-11-03T11:55:00.568Z
-_get_credentials
-2025-11-03T11:55:00.568Z
-_get_waiter_config
-2025-11-03T11:55:00.568Z
-_load_exceptions
-2025-11-03T11:55:00.568Z
-_loader
-2025-11-03T11:55:00.568Z
-_make_api_call
-2025-11-03T11:55:00.568Z
-_make_request
-2025-11-03T11:55:00.568Z
-_register_handlers
-2025-11-03T11:55:00.568Z
-_request_signer
-2025-11-03T11:55:00.568Z
-_resolve_endpoint_ruleset
-2025-11-03T11:55:00.568Z
-_response_parser
-2025-11-03T11:55:00.568Z
-_ruleset_resolver
-2025-11-03T11:55:00.568Z
-_serializer
-2025-11-03T11:55:00.568Z
-_service_model
-2025-11-03T11:55:00.568Z
-_user_agent_creator
-2025-11-03T11:55:00.568Z
-can_paginate
-2025-11-03T11:55:00.568Z
-close
-2025-11-03T11:55:00.568Z
-create_call_analytics_category
-2025-11-03T11:55:00.568Z
-create_language_model
-2025-11-03T11:55:00.568Z
-create_medical_vocabulary
-2025-11-03T11:55:00.568Z
-create_vocabulary
-2025-11-03T11:55:00.568Z
-create_vocabulary_filter
-2025-11-03T11:55:00.568Z
-delete_call_analytics_category
-2025-11-03T11:55:00.568Z
-delete_call_analytics_job
-2025-11-03T11:55:00.568Z
-delete_language_model
-2025-11-03T11:55:00.568Z
-delete_medical_scribe_job
-2025-11-03T11:55:00.568Z
-delete_medical_transcription_job
-2025-11-03T11:55:00.568Z
-delete_medical_vocabulary
-2025-11-03T11:55:00.568Z
-delete_transcription_job
-2025-11-03T11:55:00.568Z
-delete_vocabulary
-2025-11-03T11:55:00.568Z
-delete_vocabulary_filter
-2025-11-03T11:55:00.568Z
-describe_language_model
-2025-11-03T11:55:00.568Z
-exceptions
-2025-11-03T11:55:00.568Z
-generate_presigned_url
-2025-11-03T11:55:00.568Z
-get_call_analytics_category
-2025-11-03T11:55:00.568Z
-get_call_analytics_job
-2025-11-03T11:55:00.568Z
-get_medical_scribe_job
-2025-11-03T11:55:00.568Z
-get_medical_transcription_job
-2025-11-03T11:55:00.568Z
-get_medical_vocabulary
-2025-11-03T11:55:00.568Z
-get_paginator
-2025-11-03T11:55:00.568Z
-get_transcription_job
-2025-11-03T11:55:00.568Z
-get_vocabulary
-2025-11-03T11:55:00.568Z
-get_vocabulary_filter
-2025-11-03T11:55:00.568Z
-get_waiter
-2025-11-03T11:55:00.568Z
-list_call_analytics_categories
-2025-11-03T11:55:00.568Z
-list_call_analytics_jobs
-2025-11-03T11:55:00.568Z
-list_language_models
-2025-11-03T11:55:00.568Z
-list_medical_scribe_jobs
-2025-11-03T11:55:00.568Z
-list_medical_transcription_jobs
-2025-11-03T11:55:00.568Z
-list_medical_vocabularies
-2025-11-03T11:55:00.568Z
-list_tags_for_resource
-2025-11-03T11:55:00.568Z
-list_transcription_jobs
-2025-11-03T11:55:00.568Z
-list_vocabularies
-2025-11-03T11:55:00.568Z
-list_vocabulary_filters
-2025-11-03T11:55:00.568Z
-meta
-2025-11-03T11:55:00.568Z
-start_call_analytics_job
-2025-11-03T11:55:00.568Z
-start_medical_scribe_job
-2025-11-03T11:55:00.568Z
-start_medical_transcription_job
-2025-11-03T11:55:00.568Z
-start_transcription_job
-2025-11-03T11:55:00.568Z
-tag_resource
-2025-11-03T11:55:00.568Z
-untag_resource
-2025-11-03T11:55:00.568Z
-update_call_analytics_category
-2025-11-03T11:55:00.568Z
-update_medical_vocabulary
-2025-11-03T11:55:00.568Z
-update_vocabulary
-2025-11-03T11:55:00.568Z
-update_vocabulary_filter
-2025-11-03T11:55:00.568Z
-waiter_names
-2025-11-03T11:55:00.568Z
-----------------------------------------------------
-2025-11-03T11:55:00.568Z
-¿El método 'start_stream_transcription' existe?: False
+INIT_START Runtime Version: python:3.11.v97 Runtime Version ARN: arn:aws:lambda:eu-west-1::runtime:6c687d1ae05d783a82cd99c5896c1baddfe1daf7ac4068082fb989401de8b287
+2025-11-03T12:44:26.702Z
+START RequestId: 4b22c8a9-501f-4342-a966-61ea26c530d5 Version: $LATEST
+2025-11-03T12:44:26.702Z
+Texto recibido del frontend: ¿Hola, podrías ayudarme?
+2025-11-03T12:44:27.522Z
+Respuesta de Gemini: ¡Hola! Claro que sí. Soy AseguraIA, tu asistente virtual de seguros. Estoy aquí para ayudarte a encontrar la póliza que mejor se adapte a tus necesidades.
+2025-11-03T12:44:27.522Z
+Para empezar, ¿podrías contarme qué tipo de seguro te interesa? Por ejemplo, ¿buscas seguro de auto, de hogar, de vida, o algo diferente?
+2025-11-03T12:44:28.433Z
+END RequestId: 4b22c8a9-501f-4342-a966-61ea26c530d5
+2025-11-03T12:44:28.433Z
+REPORT RequestId: 4b22c8a9-501f-4342-a966-61ea26c530d5 Duration: 1730.20 ms Billed Duration: 2358 ms Memory Size: 512 MB Max Memory Used: 84 MB Init Duration: 627.56 ms
+
+
+Sending text: ¿Hola, podrías ayudarme?
+(index):1  Access to fetch at 'https://bgcqzdreehrcyr5yb4kb7ojueq0uhprn.lambda-url.eu-west-1.on.aws/' from origin 'https://frontend-agentevirtualvoz.vercel.app' has been blocked by CORS policy: The 'Access-Control-Allow-Origin' header contains multiple values '*, *', but only one is allowed. Have the server send the header with a valid value.
+[NEW] Explain Console errors by using Copilot in Edge: click
+         
+         to explain an error. 
+        Learn more
+        Don't show again
+index-DNbXtMyT.js:102   POST https://bgcqzdreehrcyr5yb4kb7ojueq0uhprn.lambda-url.eu-west-1.on.aws/ net::ERR_FAILED 200 (OK)
+v @ index-DNbXtMyT.js:102
+Le.onresult @ index-DNbXtMyT.js:102
+index-DNbXtMyT.js:102  Error sending/receiving audio: TypeError: Failed to fetch
+    at v (index-DNbXtMyT.js:102:1265)
+    at Le.onresult (index-DNbXtMyT.js:102:826)
+v @ index-DNbXtMyT.js:102
+await in v
+Le.onresult @ index-DNbXtMyT.js:102

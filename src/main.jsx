@@ -86,8 +86,8 @@ function Sidebar({ currentView, setView }) {
   return (
     <aside className="w-64 bg-gray-900 text-white flex flex-col shadow-2xl">
       <div className="p-6 text-center">
-        <h1 className="text-2xl font-bold text-white tracking-wider">AseguraIA</h1>
-        <p className="text-xs text-gray-400">Panel de Agente Virtual</p>
+        <h1 className="text-2xl font-bold text-white tracking-wider">Agentes Virtuales de Anhela IT</h1>
+        <p className="text-xs text-gray-400">Plataforma de Agentes Virtuales por Voz</p>
       </div>
       <nav className="flex-1 p-4 space-y-2">
         <NavButton
