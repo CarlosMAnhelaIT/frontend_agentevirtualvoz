@@ -1,13 +1,14 @@
-import React, { useState, useRef } from 'react';
-import { Phone, Mic, MicOff, PhoneOff, Bot } from 'lucide-react';
+
+import React, { useState, useRef, useEffect } from 'react';
+import { Phone, Mic, PhoneOff, Bot } from 'lucide-react';
 
 // URL del endpoint de tu backend (Lambda). Reemplázala por tu URL real.
 const AWS_LAMBDA_ENDPOINT = 'https://tu-endpoint-de-lambda.amazonaws.com/prod/audio-handler';
 
 const Llamadas = () => {
   const [callStatus, setCallStatus] = useState('idle'); // idle, active, connecting, ended
-  const [isListening, setIsListening] = useState(false);
-  const [agentStatus, setAgentStatus] = useState('Ready'); // Ready, Listening, Speaking
+  const [isRecording, setIsRecording] = useState(false);
+  const [agentStatus, setAgentStatus] = useState('Ready'); // Ready, Listening, Speaking, Thinking, Error
 
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
@@ -22,28 +23,22 @@ const Llamadas = () => {
     setAgentStatus('Connecting...');
 
     try {
-      // 1. Pedir permiso y obtener el stream de audio
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      
-      // 2. Iniciar MediaRecorder
-      mediaRecorderRef.current = new MediaRecorder(stream);
-      
-      // 3. Definir qué hacer cuando hay datos de audio disponibles
-      mediaRecorderRef.current.ondataavailable = (event) => {
+      const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+
+      recorder.ondataavailable = (event) => {
         audioChunksRef.current.push(event.data);
       };
 
-      // 4. Definir qué hacer cuando se para de grabar
-      mediaRecorderRef.current.onstop = async () => {
+      recorder.onstop = () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        audioChunksRef.current = []; // Limpiar para la próxima grabación
+        audioChunksRef.current = [];
         sendAudioToBackend(audioBlob);
       };
 
+      mediaRecorderRef.current = recorder;
       setCallStatus('active');
-      setAgentStatus('Ready');
-      // Iniciar la escucha automáticamente al conectar
-      startListening();
+      setAgentStatus('Ready to talk');
 
     } catch (error) {
       console.error("Error accessing microphone:", error);
@@ -53,59 +48,54 @@ const Llamadas = () => {
   };
 
   const handleHangUp = () => {
-    stopListening();
     if (mediaRecorderRef.current && mediaRecorderRef.current.stream) {
       mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
     }
     setCallStatus('ended');
     setAgentStatus('Call Ended');
     setTimeout(() => {
-        setCallStatus('idle');
-        setAgentStatus('Ready');
+      setCallStatus('idle');
+      setAgentStatus('Ready');
     }, 2000);
   };
 
   // --- Lógica de Grabación y Envío ---
 
-  const startListening = () => {
+  const startRecording = () => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'inactive') {
-      mediaRecorderRef.current.start();
-      setIsListening(true);
+      setIsRecording(true);
       setAgentStatus('Listening...');
+      mediaRecorderRef.current.start();
     }
   };
 
-  const stopListening = () => {
+  const stopRecording = () => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       mediaRecorderRef.current.stop();
-      setIsListening(false);
-      setAgentStatus('Thinking...'); // El agente está "pensando" mientras procesa
+      setIsRecording(false);
+      setAgentStatus('Thinking...');
     }
   };
 
   const sendAudioToBackend = async (audioBlob) => {
+    if (audioBlob.size === 0) {
+        setAgentStatus('Ready to talk');
+        return;
+    }
     try {
       const response = await fetch(AWS_LAMBDA_ENDPOINT, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'audio/webm',
-        },
         body: audioBlob,
       });
 
-      if (!response.ok) {
-        throw new Error(`Server responded with ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`Server error: ${response.status}`);
 
-      // Recibir la respuesta de audio y reproducirla
       const responseAudioBlob = await response.blob();
       playAgentResponse(responseAudioBlob);
 
     } catch (error) {
-      console.error("Error sending audio to backend:", error);
+      console.error("Error sending/receiving audio:", error);
       setAgentStatus('Error');
-      // En caso de error, volver a escuchar
-      startListening();
     }
   };
 
@@ -120,70 +110,55 @@ const Llamadas = () => {
     
     setAgentStatus('Speaking...');
 
-    // Cuando el agente termine de hablar, vuelve a escuchar al usuario
     audioPlayer.onended = () => {
-      setAgentStatus('Ready');
-      startListening();
+      setAgentStatus('Ready to talk');
     };
   };
 
-
   // --- Renderizado del Componente ---
-
-  const CallButton = () => (
-    <button
-      onClick={handleCall}
-      className="bg-green-500 hover:bg-green-600 text-white rounded-full w-20 h-20 flex items-center justify-center shadow-lg transition-transform transform hover:scale-110"
-    >
-      <Phone size={32} />
-    </button>
-  );
-
-  const HangUpButton = () => (
-    <button
-      onClick={handleHangUp}
-      className="bg-red-500 hover:bg-red-600 text-white rounded-full w-20 h-20 flex items-center justify-center shadow-lg transition-transform transform hover:scale-110"
-    >
-      <PhoneOff size={32} />
-    </button>
-  );
-
-  const MicButton = () => (
-    <button
-      onMouseDown={startListening}
-      onMouseUp={stopListening}
-      onTouchStart={startListening}
-      onTouchEnd={stopListening}
-      className={`rounded-full w-24 h-24 flex items-center justify-center shadow-xl transition-all duration-200 ${
-        isListening ? 'bg-red-500 text-white scale-110' : 'bg-blue-500 text-white'
-      }`}
-    >
-      <Mic size={40} />
-    </button>
-  );
 
   return (
     <div className="p-4 m-4 border rounded-lg shadow-lg max-w-md mx-auto bg-gray-800 text-white flex flex-col items-center justify-center h-96">
       <div className="text-center mb-6">
         <h2 className="text-2xl font-bold">Agente de Voz</h2>
-        <div className="flex items-center justify-center space-x-2 mt-2 p-2 bg-gray-700 rounded-full">
+        <div className="flex items-center justify-center space-x-2 mt-2 p-2 bg-gray-700 rounded-full min-w-[150px]">
             <Bot size={20} className={agentStatus === 'Speaking...' ? 'text-green-400 animate-pulse' : 'text-gray-400'}/>
             <p className="font-mono text-lg">{agentStatus}</p>
         </div>
       </div>
 
       <div className="flex-grow flex items-center justify-center">
-        {callStatus === 'active' && <MicButton />}
+        {callStatus === 'active' && (
+            <button
+                onMouseDown={startRecording}
+                onMouseUp={stopRecording}
+                onTouchStart={startRecording}
+                onTouchEnd={stopRecording}
+                className={`rounded-full w-24 h-24 flex items-center justify-center shadow-xl transition-all duration-200 ${
+                    isRecording ? 'bg-green-500 text-white scale-110' : 'bg-blue-500 text-white'
+                }`}
+                >
+                <Mic size={40} />
+            </button>
+        )}
       </div>
 
-      <div className="flex justify-center space-x-8 w-full">
-        {callStatus !== 'active' ? <CallButton /> : <HangUpButton />}
+      <div className="flex justify-center space-x-8 w-full mt-4">
+        {callStatus !== 'active' ? (
+            <button onClick={handleCall} className="bg-green-500 hover:bg-green-600 text-white rounded-full w-20 h-20 flex items-center justify-center shadow-lg transition-transform transform hover:scale-110">
+                <Phone size={32} />
+            </button>
+        ) : (
+            <button onClick={handleHangUp} className="bg-red-500 hover:bg-red-600 text-white rounded-full w-20 h-20 flex items-center justify-center shadow-lg transition-transform transform hover:scale-110">
+                <PhoneOff size={32} />
+            </button>
+        )}
       </div>
-       <div className="mt-4 text-xs text-gray-400 text-center">
+       <div className="mt-4 text-xs text-gray-400 text-center h-5">
           <p>
             {callStatus === 'active' 
-              ? 'Mantén presionado el botón del micrófono para hablar.'
-              : 'Presiona el teléfono para iniciar la llamada.'
+              ? 'Mantén presionado el botón para hablar.'
+              : 'Presiona el teléfono para iniciar.'
             }
           </p>
       </div>
