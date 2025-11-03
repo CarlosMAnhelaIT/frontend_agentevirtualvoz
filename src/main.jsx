@@ -22,12 +22,11 @@ import Llamadas from './components/Llamadas'; // Asegurarse de que Llamadas se i
 // --- Componente Principal ---
 
 export default function App() {
-  const [view, setView] = useState('creation'); // Vistas: 'creation', 'docs', 'call'
+  const [view, setView] = useState('creation'); // Vistas: 'creation', 'call'
   const [agentName, setAgentName] = useState('AseguraIA');
   const [systemPrompt, setSystemPrompt] = useState(
     'Eres un agente de seguros por voz llamado AseguraIA. Tu objetivo es ayudar a los clientes a encontrar el seguro perfecto. Responde de forma concisa, amigable y profesional. Haz preguntas para guiar la conversación. No respondas en formato Markdown. Eres una IA de voz, tus respuestas deben ser naturales para ser escuchadas.'
   );
-  const [uploadedFiles, setUploadedFiles] = useState([]);
 
   return (
     <div className="flex h-screen w-full bg-gray-100 font-sans">
@@ -43,11 +42,6 @@ export default function App() {
               setAgentName={setAgentName} 
               systemPrompt={systemPrompt} 
               setSystemPrompt={setSystemPrompt} 
-            />}
-          {view === 'docs' && 
-            <DocumentationView 
-              uploadedFiles={uploadedFiles} 
-              setUploadedFiles={setUploadedFiles} 
             />}
           {view === 'call' && 
             <Llamadas 
@@ -90,11 +84,6 @@ function Sidebar({ currentView, setView, agentName }) {
           viewName="creation"
           icon={LayoutDashboard}
           label="Creación del Agente"
-        />
-        <NavButton
-          viewName="docs"
-          icon={FileText}
-          label="Documentación"
         />
         <NavButton
           viewName="call"

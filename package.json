@@ -13,9 +13,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "lucide-react": "^0.395.0",
-    "@twilio/voice-sdk": "^2.10.2",
-    "pdfjs-dist": "^4.4.170",
-    "react-dropzone": "^14.2.3"
+    "@twilio/voice-sdk": "^2.10.2"
   },
   "devDependencies": {
     "@types/react": "^18.2.66",
