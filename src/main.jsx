@@ -75,7 +75,7 @@ function Sidebar({ currentView, setView, agentName }) {
   return (
     <aside className="w-64 bg-gray-900 text-white flex flex-col shadow-2xl">
       <div className="p-6 text-center border-b border-gray-700">
-        <h1 className="text-2xl font-bold text-white tracking-wider">Agent Platform</h1>
+        <h1 className="text-2xl font-bold text-white tracking-wider">Plataforma de Agentes Virtuales de Anhela IT</h1>
         <p className="text-xs text-gray-400">Creador de Agentes</p>
       </div>
       <nav className="flex-1 p-4 space-y-2">
