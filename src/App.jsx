@@ -70,9 +70,9 @@ function Sidebar({ currentView, setView, agentName }) {
   return (
     <aside className="w-64 bg-white text-gray-800 flex flex-col shadow-2xl border-r border-gray-200">
       <div className="p-6 text-center border-b border-gray-200">
-        <img src={logo} alt="Lyntia Logo" className="w-32 mx-auto mb-4" />
+        <img src={logo} alt="Lyntia Logo" className="w-40 mx-auto mb-4" />
         <h1 className="text-xl font-bold text-gray-800 tracking-wider">Plataforma de Agentes Virtuales</h1>
-        <p className="text-xs text-gray-500">Demo para Cliente</p>
+        <p className="text-xs text-gray-500">Prototipo de MVP</p>
       </div>
       <nav className="flex-1 p-4 space-y-2">
         <NavButton
@@ -101,15 +101,7 @@ function Sidebar({ currentView, setView, agentName }) {
 
 function Header() {
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200 p-4 flex justify-between items-center">
-      <div className="relative w-full max-w-md">
-        <input
-          type="text"
-          placeholder="Buscar..."
-          className="w-full pl-10 pr-4 py-2 rounded-full bg-gray-100 border border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
-        />
-        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-      </div>
+    <header className="bg-white shadow-sm border-b border-gray-200 p-4 flex justify-end items-center">
       <div className="flex items-center space-x-4">
         <button className="text-gray-500 hover:text-gray-900 p-2 rounded-full hover:bg-gray-100 transition-colors">
           <Bell size={20} />
