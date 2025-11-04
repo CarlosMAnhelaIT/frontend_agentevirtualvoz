@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Bar, Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
-import { Bug, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { Bug, Clock, CheckCircle, AlertCircle, Smile, Meh, Frown } from 'lucide-react';
 
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement);
@@ -11,7 +11,7 @@ const Incidencias = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const LAMBDA_URL = 'https://d772jbrxa2xlfgeqn2b3rky6p40vfprt.lambda-url.eu-west-1.on.aws/'; 
+    const LAMBDA_URL = 'https://d772jbrxa2xlfgeqn2b3rky6p40vfprt.lambda-url.eu-west-1.on.aws/';
 
     useEffect(() => {
         const fetchIncidencias = async () => {
@@ -23,17 +23,7 @@ const Incidencias = () => {
                     throw new Error('Error al cargar los datos desde la Lambda.');
                 }
                 const data = await response.json();
-                
-                // Mapear los datos de la Lambda a la estructura que espera el componente
-                const mappedData = data.map(item => ({
-                    id: item.incidentId,
-                    type: item.clasificacion, // Usar 'clasificacion' como 'type'
-                    status: item.status || 'Abierta', // Asumir un estado por defecto si no viene de la API
-                    date: new Date(item.createdAt).toLocaleDateString(), // Formatear la fecha
-                    priority: item.prioridad, // Usar 'prioridad'
-                }));
-
-                setIncidencias(mappedData);
+                setIncidencias(data);
             } catch (err) {
                 setError('Error al cargar las incidencias.');
                 console.error(err);
@@ -47,179 +37,134 @@ const Incidencias = () => {
 
     // --- Data Processing for Charts and KPIs ---
     const totalIncidencias = incidencias.length;
-    const incidenciasAbiertas = incidencias.filter(inc => inc.status === 'Abierta').length;
-    const incidenciasCerradas = incidencias.filter(inc => inc.status === 'Cerrada').length;
-    const incidenciasEnProgreso = incidencias.filter(inc => inc.status === 'En Progreso').length;
-
-    const incidenciasPorTipo = incidencias.reduce((acc, inc) => {
-        acc[inc.type] = (acc[inc.type] || 0) + 1;
+    const incidenciasPorPrioridad = incidencias.reduce((acc, inc) => {
+        const priority = inc.prioridad || 'N/A';
+        acc[priority] = (acc[priority] || 0) + 1;
         return acc;
     }, {});
 
-    const incidenciasPorEstado = incidencias.reduce((acc, inc) => {
-        acc[inc.status] = (acc[inc.status] || 0) + 1;
+    const incidenciasPorSentimiento = incidencias.reduce((acc, inc) => {
+        const sentiment = inc.overallSentiment || 'Neutral';
+        acc[sentiment] = (acc[sentiment] || 0) + 1;
         return acc;
     }, {});
 
     // Chart Data
-    const barChartData = {
-        labels: Object.keys(incidenciasPorTipo),
+    const priorityChartData = {
+        labels: Object.keys(incidenciasPorPrioridad),
         datasets: [
             {
                 label: 'Número de Incidencias',
-                data: Object.values(incidenciasPorTipo),
-                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'],
-                borderColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'],
-                borderWidth: 1,
+                data: Object.values(incidenciasPorPrioridad),
+                backgroundColor: ['#FF6384', '#FFCE56', '#36A2EB'],
             },
         ],
     };
 
-    const doughnutChartData = {
-        labels: Object.keys(incidenciasPorEstado),
+    const sentimentChartData = {
+        labels: Object.keys(incidenciasPorSentimiento),
         datasets: [
             {
-                data: Object.values(incidenciasPorEstado),
-                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
-                hoverBackgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+                data: Object.values(incidenciasPorSentimiento),
+                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'], // Red, Green, Yellow
             },
         ],
     };
 
-    const chartOptions = {
+    const chartOptions = (titleText) => ({
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-            legend: {
-                position: 'top',
-                labels: {
-                    color: '#333',
-                },
-            },
+            legend: { display: false },
             title: {
                 display: true,
-                text: 'Incidencias por Tipo',
+                text: titleText,
                 color: '#333',
-                font: {
-                    size: 16,
-                },
+                font: { size: 16 },
             },
         },
-        scales: {
-            x: {
-                ticks: {
-                    color: '#666',
-                },
-                grid: {
-                    color: 'rgba(0,0,0,0.05)',
-                },
-            },
-            y: {
-                ticks: {
-                    color: '#666',
-                    beginAtZero: true,
-                },
-                grid: {
-                    color: 'rgba(0,0,0,0.05)',
-                },
-            },
-        },
-    };
+    });
 
-    const doughnutOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                position: 'right',
-                labels: {
-                    color: '#333',
-                },
-            },
-            title: {
-                display: true,
-                text: 'Incidencias por Estado',
-                color: '#333',
-                font: {
-                    size: 16,
-                },
-            },
-        },
+    const getSentimentIcon = (sentiment) => {
+        switch (sentiment) {
+            case 'Positivo': return <Smile className="text-green-500" />;
+            case 'Negativo': return <Frown className="text-red-500" />;
+            default: return <Meh className="text-yellow-500" />;
+        }
     };
-
 
     if (loading) return <div className="p-6 text-center text-gray-600">Cargando incidencias...</div>;
     if (error) return <div className="p-6 text-center text-red-600">{error}</div>;
 
     return (
-        <div className="p-2">
-            <h1 className="text-3xl font-bold text-gray-800 mb-6">Panel de Incidencias</h1>
+        <div className="p-4 md:p-8 bg-gray-50">
+            <h1 className="text-3xl font-bold text-gray-800 mb-6">Panel Avanzado de Incidencias</h1>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                {/* KPI Card: Total Incidencias */}
-                <div className="bg-white p-5 rounded-xl shadow-md flex items-center justify-between border border-gray-200">
-                    <div>
-                        <p className="text-sm font-medium text-gray-500">Total Incidencias</p>
-                        <p className="text-3xl font-bold text-gray-900">{totalIncidencias}</p>
-                    </div>
-                    <div className="p-3 bg-blue-100 rounded-full">
-                        <Bug size={24} className="text-blue-600" />
-                    </div>
-                </div>
-
-                {/* KPI Card: Incidencias Abiertas */}
-                <div className="bg-white p-5 rounded-xl shadow-md flex items-center justify-between border border-gray-200">
-                    <div>
-                        <p className="text-sm font-medium text-gray-500">Incidencias Abiertas</p>
-                        <p className="text-3xl font-bold text-gray-900">{incidenciasAbiertas}</p>
-                    </div>
-                    <div className="p-3 bg-red-100 rounded-full">
-                        <AlertCircle size={24} className="text-red-600" />
-                    </div>
-                </div>
-
-                {/* KPI Card: Incidencias En Progreso */}
-                <div className="bg-white p-5 rounded-xl shadow-md flex items-center justify-between border border-gray-200">
-                    <div>
-                        <p className="text-sm font-medium text-gray-500">En Progreso</p>
-                        <p className="text-3xl font-bold text-gray-900">{incidenciasEnProgreso}</p>
-                    </div>
-                    <div className="p-3 bg-yellow-100 rounded-full">
-                        <Clock size={24} className="text-yellow-600" />
-                    </div>
-                </div>
-
-                {/* KPI Card: Incidencias Cerradas */}
-                <div className="bg-white p-5 rounded-xl shadow-md flex items-center justify-between border border-gray-200">
-                    <div>
-                        <p className="text-sm font-medium text-gray-500">Incidencias Cerradas</p>
-                        <p className="text-3xl font-bold text-gray-900">{incidenciasCerradas}</p>
-                    </div>
-                    <div className="p-3 bg-green-100 rounded-full">
-                        <CheckCircle size={24} className="text-green-600" />
-                    </div>
-                </div>
+            {/* KPIs */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <KpiCard title="Total Incidencias" value={totalIncidencias} icon={<Bug size={24} className="text-blue-600" />} />
+                <KpiCard title="Prioridad Alta" value={incidenciasPorPrioridad['Alta'] || 0} icon={<AlertCircle size={24} className="text-red-600" />} />
+                <KpiCard title="Prioridad Media" value={incidenciasPorPrioridad['Media'] || 0} icon={<Clock size={24} className="text-yellow-600" />} />
+                <KpiCard title="Sentimiento Negativo" value={incidenciasPorSentimiento['Negativo'] || 0} icon={<Frown size={24} className="text-red-600" />} />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Chart: Incidencias por Tipo */}
-                <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200 flex flex-col items-center justify-center">
-                    <h2 className="text-xl font-semibold text-gray-800 mb-4">Incidencias por Tipo</h2>
-                    <div className="relative h-80 w-full">
-                        <Bar data={barChartData} options={chartOptions} />
-                    </div>
-                </div>
+            {/* Charts */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <ChartCard title="Incidencias por Prioridad">
+                    <Doughnut data={priorityChartData} options={chartOptions('Distribución por Prioridad')} />
+                </ChartCard>
+                <ChartCard title="Análisis de Sentimiento Global">
+                    <Doughnut data={sentimentChartData} options={chartOptions('Distribución de Sentimiento')} />
+                </ChartCard>
+            </div>
 
-                {/* Chart: Incidencias por Estado */}
-                <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200 flex flex-col items-center justify-center">
-                    <h2 className="text-xl font-semibold text-gray-800 mb-4">Incidencias por Estado</h2>
-                    <div className="relative h-80 w-full">
-                        <Doughnut data={doughnutChartData} options={doughnutOptions} />
-                    </div>
+            {/* Incidents Table */}
+            <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200">
+                <h2 className="text-xl font-semibold text-gray-800 mb-4">Detalle de Incidencias</h2>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left text-gray-500">
+                        <thead className="text-xs text-gray-700 uppercase bg-gray-100">
+                            <tr>
+                                <th scope="col" className="px-6 py-3">Resumen</th>
+                                <th scope="col" className="px-6 py-3">Clasificación</th>
+                                <th scope="col" className="px-6 py-3">Prioridad</th>
+                                <th scope="col" className="px-6 py-3">Sentimiento</th>
+                                <th scope="col" className="px-6 py-3">Fecha</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {incidencias.map(inc => (
+                                <tr key={inc.incidentId} className="bg-white border-b hover:bg-gray-50">
+                                    <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">{inc.resumenIncidencia}</td>
+                                    <td className="px-6 py-4">{inc.clasificacion}</td>
+                                    <td className="px-6 py-4"><span className={`px-2 py-1 rounded-full text-xs font-semibold ${inc.prioridad === 'Alta' ? 'bg-red-100 text-red-800' : inc.prioridad === 'Media' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}`}>{inc.prioridad}</span></td>
+                                    <td className="px-6 py-4">{getSentimentIcon(inc.overallSentiment)}</td>
+                                    <td className="px-6 py-4">{new Date(inc.createdAt).toLocaleDateString()}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     );
 };
+
+const KpiCard = ({ title, value, icon }) => (
+    <div className="bg-white p-5 rounded-xl shadow-md flex items-center justify-between border border-gray-200">
+        <div>
+            <p className="text-sm font-medium text-gray-500">{title}</p>
+            <p className="text-3xl font-bold text-gray-900">{value}</p>
+        </div>
+        <div className="p-3 bg-gray-100 rounded-full">{icon}</div>
+    </div>
+);
+
+const ChartCard = ({ title, children }) => (
+    <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200 flex flex-col items-center justify-center">
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">{title}</h2>
+        <div className="relative h-64 w-full">{children}</div>
+    </div>
+);
 
 export default Incidencias;

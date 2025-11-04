@@ -2,29 +2,25 @@ import React, { useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import { 
-  LayoutDashboard, 
-  FileText, 
   Phone, 
-  MessageCircle, 
-  Repeat, 
-  CheckCircle, 
   Search, 
   Bell,
-  Users,
-  BarChart3
+  BarChart3,
+  BrainCircuit
 } from 'lucide-react';
 
 // Importar los nuevos componentes de vista
-import Llamadas from './components/Llamadas'; // Asegurarse de que Llamadas se importa desde su archivo
+import Llamadas from './components/Llamadas';
 import Incidencias from './components/Incidencias';
+import ObjetivosIA from './components/ObjetivosIA';
 
 // --- Componente Principal ---
 
 export default function App() {
-  const [view, setView] = useState('call'); // Vistas: 'call', 'incidencias'
-  const [agentName, setAgentName] = useState('AseguraIA');
+  const [view, setView] = useState('call'); // Vistas: 'call', 'incidencias', 'objetivos'
+  const [agentName, setAgentName] = useState('LyntiaIA');
   const [systemPrompt, setSystemPrompt] = useState(
-    'Eres un agente de seguros por voz llamado AseguraIA. Tu objetivo es ayudar a los clientes a encontrar el seguro perfecto. Responde de forma concisa, amigable y profesional. Haz preguntas para guiar la conversación. No respondas en formato Markdown. Eres una IA de voz, tus respuestas deben ser naturales para ser escuchadas.'
+    'Eres un agente de IA de Lyntia. Tu objetivo es ayudar a los clientes con soporte técnico. Responde de forma concisa, amigable y profesional. Haz preguntas para guiar la conversación. No respondas en formato Markdown. Eres una IA de voz, tus respuestas deben ser naturales para ser escuchadas.'
   );
 
   return (
@@ -39,10 +35,11 @@ export default function App() {
             <Llamadas 
               agentName={agentName} 
               systemPrompt={systemPrompt} 
-            />
-}
+            />}
           {view === 'incidencias' && 
             <Incidencias />}
+          {view === 'objetivos' &&
+            <ObjetivosIA />}
         </main>
       </div>
     </div>
@@ -75,18 +72,23 @@ function Sidebar({ currentView, setView, agentName }) {
       <div className="p-6 text-center border-b border-gray-200">
         <img src={logo} alt="Lyntia Logo" className="w-32 mx-auto mb-4" />
         <h1 className="text-xl font-bold text-gray-800 tracking-wider">Plataforma de Agentes Virtuales</h1>
-        <p className="text-xs text-gray-500">Creador de Agentes</p>
+        <p className="text-xs text-gray-500">Demo para Cliente</p>
       </div>
       <nav className="flex-1 p-4 space-y-2">
         <NavButton
           viewName="call"
           icon={Phone}
-          label="Llamadas"
+          label="Llamada en Vivo"
         />
         <NavButton
           viewName="incidencias"
           icon={BarChart3}
-          label="Incidencias"
+          label="Panel de Incidencias"
+        />
+        <NavButton
+          viewName="objetivos"
+          icon={BrainCircuit}
+          label="Capacidades de la IA"
         />
       </nav>
       <div className="p-4 border-t border-gray-200 text-center">
