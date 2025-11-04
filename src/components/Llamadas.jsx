@@ -14,25 +14,13 @@ if (SpeechRecognition) {
 }
 
 // --- Componente de Burbuja de Chat ---
-const ChatBubble = ({ role, text, sentiment }) => {
+const ChatBubble = ({ role, text }) => {
     const isUser = role === 'user';
-
-    const getSentimentClass = () => {
-        if (!isUser) return 'border-transparent';
-        switch (sentiment) {
-            case 'Positivo':
-                return 'border-green-500';
-            case 'Negativo':
-                return 'border-red-500';
-            default:
-                return 'border-transparent';
-        }
-    };
 
     return (
         <div className={`flex items-start gap-3 my-4 ${isUser ? 'justify-end' : 'justify-start'}`}>
             {!isUser && <div className="flex-shrink-0 w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center"><Bot size={22} className="text-white"/></div>}
-            <div className={`p-3 rounded-2xl max-w-xs md:max-w-md transition-all duration-300 border-2 ${getSentimentClass()} ${isUser ? 'bg-blue-500 text-white rounded-br-none' : 'bg-white text-gray-800 rounded-bl-none shadow-sm'}`}>
+            <div className={`p-3 rounded-2xl max-w-xs md:max-w-md transition-all duration-300 ${isUser ? 'bg-blue-500 text-white rounded-br-none' : 'bg-white text-gray-800 rounded-bl-none shadow-sm'}`}>
                 <ReactMarkdown className="text-sm">{text}</ReactMarkdown>
             </div>
             {isUser && <div className="flex-shrink-0 w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center"><User size={22} className="text-gray-600"/></div>}
@@ -41,7 +29,7 @@ const ChatBubble = ({ role, text, sentiment }) => {
 };
 
 // --- Componente Principal de Llamadas ---
-const Llamadas = ({ agentName, systemPrompt }) => {
+const Llamadas = ({ agentName, systemPrompt, setLiveSentiment }) => {
     const [callStatus, setCallStatus] = useState('idle');
     const [isListening, setIsListening] = useState(false);
     const [agentStatus, setAgentStatus] = useState('Lista');
@@ -77,7 +65,7 @@ const Llamadas = ({ agentName, systemPrompt }) => {
             const transcript = event.results[event.results.length - 1][0].transcript.trim();
             if (transcript) {
                 setAgentStatus('Pensando...');
-                const newUserMessage = { role: 'user', text: transcript, sentiment: 'Neutral' };
+                const newUserMessage = { role: 'user', text: transcript };
                 const newHistory = [...history, newUserMessage];
                 setHistory(newHistory);
                 sendTextToBackend(transcript, newHistory);
@@ -99,6 +87,7 @@ const Llamadas = ({ agentName, systemPrompt }) => {
         setHistory([]);
         setCallStatus('active');
         setAgentStatus('Lista para hablar');
+        setLiveSentiment('Neutral'); // Reset sentiment on new call
     };
 
     const handleHangUp = () => {
@@ -121,7 +110,6 @@ const Llamadas = ({ agentName, systemPrompt }) => {
             const response = await fetch(AWS_LAMBDA_ENDPOINT, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                // Pass the most recent history to the backend
                 body: JSON.stringify({ text, history: currentHistory, systemPrompt }),
             });
 
@@ -129,31 +117,19 @@ const Llamadas = ({ agentName, systemPrompt }) => {
 
             const responseData = await response.json();
 
+            // Lift the sentiment state up to the parent component
+            if (responseData.sentiment) {
+                setLiveSentiment(responseData.sentiment);
+            }
+
             if (responseData.text && responseData.audio) {
                 const modelResponse = { role: 'model', text: responseData.text };
+                setHistory(prev => [...prev, modelResponse]);
                 
-                // Update history with sentiment and model's response
-                setHistory(prev => {
-                    const newHistory = [...prev];
-                    const lastUserMessageIndex = newHistory.map(h => h.role).lastIndexOf('user');
-                    
-                    // Update sentiment of the last user message
-                    if (responseData.sentiment && lastUserMessageIndex !== -1) {
-                        newHistory[lastUserMessageIndex].sentiment = responseData.sentiment;
-                    }
-                    
-                    // Add the new model response
-                    newHistory.push(modelResponse);
-                    return newHistory;
-                });
-
-                // Play audio
                 const audioBlob = await (await fetch(`data:audio/mpeg;base64,${responseData.audio}`)).blob();
                 playAgentResponse(audioBlob);
 
-                // Trigger incident creation if flag is present
                 if (responseData.incidencia_creada === true) {
-                    // Pass the history that includes the latest user and model messages
                     setHistory(prev => {
                         createIncident(prev);
                         return prev;
@@ -169,31 +145,14 @@ const Llamadas = ({ agentName, systemPrompt }) => {
         }
     };
 
-    const getOverallSentiment = (conversationHistory) => {
-        const sentiments = conversationHistory
-            .filter(msg => msg.role === 'user' && msg.sentiment)
-            .map(msg => msg.sentiment);
-
-        if (sentiments.length === 0) return 'Neutral';
-
-        const sentimentCounts = sentiments.reduce((acc, sentiment) => {
-            acc[sentiment] = (acc[sentiment] || 0) + 1;
-            return acc;
-        }, {});
-
-        return Object.keys(sentimentCounts).reduce((a, b) => sentimentCounts[a] > sentimentCounts[b] ? a : b);
-    };
-
     const createIncident = async (conversationHistory) => {
         setIsCreatingIncident(true);
         setAgentStatus('Creando Incidencia...');
         try {
-            const overallSentiment = getOverallSentiment(conversationHistory);
-
             const response = await fetch('https://fqhjig3ughucnttbt53a5gqbie0xxvdt.lambda-url.eu-west-1.on.aws/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ conversationHistory, overallSentiment }),
+                body: JSON.stringify({ conversationHistory }),
             });
 
             if (!response.ok) throw new Error(`Server error: ${response.status}`);
@@ -269,7 +228,7 @@ const Llamadas = ({ agentName, systemPrompt }) => {
                         <p>Haz clic en el micrófono para empezar.</p>
                     </div>
                 )}
-                {history.map((entry, index) => <ChatBubble key={index} role={entry.role} text={entry.text} sentiment={entry.sentiment} />)}
+                {history.map((entry, index) => <ChatBubble key={index} role={entry.role} text={entry.text} />)}
                 {incidentCreated && (
                     <div className="text-center text-green-600 font-semibold my-4 p-2 bg-green-100 rounded-lg">
                         <p>Incidencia Creada. Puede revisarla en el panel de Incidencias.</p>

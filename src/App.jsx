@@ -13,12 +13,14 @@ import {
 import Llamadas from './components/Llamadas';
 import Incidencias from './components/Incidencias';
 import ObjetivosIA from './components/ObjetivosIA';
+import SentimentIndicator from './components/SentimentIndicator'; // Importar el nuevo componente
 
 // --- Componente Principal ---
 
 export default function App() {
   const [view, setView] = useState('call'); // Vistas: 'call', 'incidencias', 'objetivos'
   const [agentName, setAgentName] = useState('LyntiaIA');
+  const [liveSentiment, setLiveSentiment] = useState('Neutral'); // Estado para el sentimiento en vivo
   const [systemPrompt, setSystemPrompt] = useState(
     'Eres un agente de IA de Lyntia. Tu objetivo es ayudar a los clientes con soporte técnico. Responde de forma concisa, amigable y profesional. Haz preguntas para guiar la conversación. No respondas en formato Markdown. Eres una IA de voz, tus respuestas deben ser naturales para ser escuchadas.'
   );
@@ -31,11 +33,20 @@ export default function App() {
         <Header />
 
         <main className="flex-1 overflow-y-auto p-6 md:p-8 lg:p-10">
-          {view === 'call' && 
-            <Llamadas 
-              agentName={agentName} 
-              systemPrompt={systemPrompt} 
-            />}
+          {view === 'call' && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+              <div className="lg:col-span-2">
+                <Llamadas 
+                  agentName={agentName} 
+                  systemPrompt={systemPrompt} 
+                  setLiveSentiment={setLiveSentiment} // Pasar la función para actualizar el sentimiento
+                />
+              </div>
+              <div className="lg:col-span-1">
+                <SentimentIndicator sentiment={liveSentiment} />
+              </div>
+            </div>
+          )}
           {view === 'incidencias' && 
             <Incidencias />}
           {view === 'objetivos' &&
