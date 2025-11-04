@@ -15,14 +15,13 @@ import {
 } from 'lucide-react';
 
 // Importar los nuevos componentes de vista
-import AgentCreationView from './components/AgentCreationView';
 import Llamadas from './components/Llamadas'; // Asegurarse de que Llamadas se importa desde su archivo
 import Incidencias from './components/Incidencias';
 
 // --- Componente Principal ---
 
 export default function App() {
-  const [view, setView] = useState('creation'); // Vistas: 'creation', 'call', 'incidencias'
+  const [view, setView] = useState('call'); // Vistas: 'call', 'incidencias'
   const [agentName, setAgentName] = useState('AseguraIA');
   const [systemPrompt, setSystemPrompt] = useState(
     'Eres un agente de seguros por voz llamado AseguraIA. Tu objetivo es ayudar a los clientes a encontrar el seguro perfecto. Responde de forma concisa, amigable y profesional. Haz preguntas para guiar la conversación. No respondas en formato Markdown. Eres una IA de voz, tus respuestas deben ser naturales para ser escuchadas.'
@@ -36,18 +35,12 @@ export default function App() {
         <Header />
 
         <main className="flex-1 overflow-y-auto p-6 md:p-8 lg:p-10">
-          {view === 'creation' && 
-            <AgentCreationView 
-              agentName={agentName} 
-              setAgentName={setAgentName} 
-              systemPrompt={systemPrompt} 
-              setSystemPrompt={setSystemPrompt} 
-            />}
           {view === 'call' && 
             <Llamadas 
               agentName={agentName} 
               systemPrompt={systemPrompt} 
-            />}
+            />
+}
           {view === 'incidencias' && 
             <Incidencias />}
         </main>
@@ -85,11 +78,6 @@ function Sidebar({ currentView, setView, agentName }) {
         <p className="text-xs text-gray-500">Creador de Agentes</p>
       </div>
       <nav className="flex-1 p-4 space-y-2">
-        <NavButton
-          viewName="creation"
-          icon={LayoutDashboard}
-          label="Creación del Agente"
-        />
         <NavButton
           viewName="call"
           icon={Phone}
