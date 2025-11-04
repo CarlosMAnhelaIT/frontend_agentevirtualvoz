@@ -17,18 +17,22 @@ if (SpeechRecognition) {
 const ChatBubble = ({ role, text, sentiment }) => {
     const isUser = role === 'user';
 
-    const sentimentStyles = {
-        Positivo: 'border-green-500',
-        Negativo: 'border-red-500',
-        Neutral: 'border-transparent',
+    const getSentimentClass = () => {
+        if (!isUser) return 'border-transparent';
+        switch (sentiment) {
+            case 'Positivo':
+                return 'border-green-500';
+            case 'Negativo':
+                return 'border-red-500';
+            default:
+                return 'border-transparent';
+        }
     };
-
-    const sentimentClass = isUser ? sentimentStyles[sentiment] || 'border-transparent' : 'border-transparent';
 
     return (
         <div className={`flex items-start gap-3 my-4 ${isUser ? 'justify-end' : 'justify-start'}`}>
             {!isUser && <div className="flex-shrink-0 w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center"><Bot size={22} className="text-white"/></div>}
-            <div className={`p-3 rounded-2xl max-w-xs md:max-w-md transition-all duration-300 border-2 ${sentimentClass} ${isUser ? 'bg-blue-500 text-white rounded-br-none' : 'bg-white text-gray-800 rounded-bl-none shadow-sm'}`}>
+            <div className={`p-3 rounded-2xl max-w-xs md:max-w-md transition-all duration-300 border-2 ${getSentimentClass()} ${isUser ? 'bg-blue-500 text-white rounded-br-none' : 'bg-white text-gray-800 rounded-bl-none shadow-sm'}`}>
                 <ReactMarkdown className="text-sm">{text}</ReactMarkdown>
             </div>
             {isUser && <div className="flex-shrink-0 w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center"><User size={22} className="text-gray-600"/></div>}
