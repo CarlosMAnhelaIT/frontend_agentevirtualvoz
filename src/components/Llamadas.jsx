@@ -32,6 +32,8 @@ const Llamadas = ({ agentName, systemPrompt }) => {
     const [isListening, setIsListening] = useState(false);
     const [agentStatus, setAgentStatus] = useState('Lista');
     const [history, setHistory] = useState([]);
+    const [isCreatingIncident, setIsCreatingIncident] = useState(false);
+    const [incidentCreated, setIncidentCreated] = useState(false);
     const audioPlayerRef = useRef(new Audio());
     const transcriptContainerRef = useRef(null);
 
@@ -110,6 +112,16 @@ const Llamadas = ({ agentName, systemPrompt }) => {
 
             const responseData = await response.json();
 
+            try {
+                const parsedText = JSON.parse(responseData.text);
+                if (parsedText.incidencia_creada === true) {
+                    createIncident(history);
+                    return;
+                }
+            } catch (e) {
+                // Not a JSON response, proceed as normal
+            }
+
             if (responseData.text && responseData.audio) {
                 setHistory(prev => [...prev, { role: 'model', text: responseData.text }]);
                 const audioBlob = await (await fetch(`data:audio/mpeg;base64,${responseData.audio}`)).blob();
@@ -121,6 +133,30 @@ const Llamadas = ({ agentName, systemPrompt }) => {
         } catch (error) {
             console.error("Error en la comunicación con el backend:", error);
             setAgentStatus('Error');
+        }
+    };
+
+    const createIncident = async (conversationHistory) => {
+        setIsCreatingIncident(true);
+        setAgentStatus('Creando Incidencia...');
+        try {
+            const response = await fetch('https://fqhjig3ughucnttbt53a5gqbie0xxvdt.lambda-url.eu-west-1.on.aws/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ conversationHistory }),
+            });
+
+            if (!response.ok) throw new Error(`Server error: ${response.status}`);
+
+            const responseData = await response.json();
+            console.log("Incidencia creada:", responseData);
+            setIncidentCreated(true);
+            setAgentStatus('Incidencia Creada');
+        } catch (error) {
+            console.error("Error al crear la incidencia:", error);
+            setAgentStatus('Error al crear');
+        } finally {
+            setIsCreatingIncident(false);
         }
     };
 
@@ -148,6 +184,7 @@ const Llamadas = ({ agentName, systemPrompt }) => {
             case 'Hablando...':
                 return <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>;
             case 'Pensando...':
+            case 'Creando Incidencia...':
                 return <div className="w-3 h-3 rounded-full bg-yellow-500 animate-pulse"></div>;
             default:
                 return <div className="w-3 h-3 rounded-full bg-gray-400"></div>;
@@ -183,6 +220,11 @@ const Llamadas = ({ agentName, systemPrompt }) => {
                     </div>
                 )}
                 {history.map((entry, index) => <ChatBubble key={index} role={entry.role} text={entry.text} />)}
+                {incidentCreated && (
+                    <div className="text-center text-green-600 font-semibold my-4 p-2 bg-green-100 rounded-lg">
+                        <p>Incidencia Creada. Puede revisarla en el panel de Incidencias.</p>
+                    </div>
+                )}
             </div>
 
             {/* Footer de Controles */}

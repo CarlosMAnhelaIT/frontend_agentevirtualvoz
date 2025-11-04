@@ -11,31 +11,29 @@ const Incidencias = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // Mock AWS Lambda URL
-    const MOCK_LAMBDA_URL = 'https://mock-api.com/incidencias'; 
+    const LAMBDA_URL = 'https://d772jbrxa2xlfgeqn2b3rky6p40vfprt.lambda-url.eu-west-1.on.aws/'; 
 
     useEffect(() => {
         const fetchIncidencias = async () => {
             setLoading(true);
             setError(null);
             try {
-                // Simulate API call
-                await new Promise(resolve => setTimeout(resolve, 1000)); 
+                const response = await fetch(LAMBDA_URL);
+                if (!response.ok) {
+                    throw new Error('Error al cargar los datos desde la Lambda.');
+                }
+                const data = await response.json();
+                
+                // Mapear los datos de la Lambda a la estructura que espera el componente
+                const mappedData = data.map(item => ({
+                    id: item.incidentId,
+                    type: item.clasificacion, // Usar 'clasificacion' como 'type'
+                    status: item.status || 'Abierta', // Asumir un estado por defecto si no viene de la API
+                    date: new Date(item.createdAt).toLocaleDateString(), // Formatear la fecha
+                    priority: item.prioridad, // Usar 'prioridad'
+                }));
 
-                // Mock data
-                const mockData = [
-                    { id: '001', type: 'Error de Sistema', status: 'Abierta', date: '2023-10-26', priority: 'Alta' },
-                    { id: '002', type: 'Fallo de Conexión', status: 'Cerrada', date: '2023-10-25', priority: 'Media' },
-                    { id: '003', type: 'Consulta de Datos', status: 'En Progreso', date: '2023-10-27', priority: 'Baja' },
-                    { id: '004', type: 'Error de Sistema', status: 'Abierta', date: '2023-10-28', priority: 'Alta' },
-                    { id: '005', type: 'Fallo de Conexión', status: 'Cerrada', date: '2023-10-27', priority: 'Media' },
-                    { id: '006', type: 'Error de Sistema', status: 'Abierta', date: '2023-10-29', priority: 'Alta' },
-                    { id: '007', type: 'Consulta de Datos', status: 'Cerrada', date: '2023-10-28', priority: 'Baja' },
-                    { id: '008', type: 'Fallo de Conexión', status: 'En Progreso', date: '2023-10-30', priority: 'Media' },
-                    { id: '009', type: 'Error de Sistema', status: 'Abierta', date: '2023-10-31', priority: 'Alta' },
-                    { id: '010', type: 'Consulta de Datos', status: 'Cerrada', date: '2023-10-30', priority: 'Baja' },
-                ];
-                setIncidencias(mockData);
+                setIncidencias(mappedData);
             } catch (err) {
                 setError('Error al cargar las incidencias.');
                 console.error(err);
