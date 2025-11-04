@@ -15,7 +15,8 @@
     "lucide-react": "^0.395.0",
     "@twilio/voice-sdk": "^2.10.2",
     "chart.js": "^4.4.3",
-    "react-chartjs-2": "^5.2.0"
+    "react-chartjs-2": "^5.2.0",
+    "react-markdown": "^8.0.7"
   },
   "devDependencies": {
     "@types/react": "^18.2.66",

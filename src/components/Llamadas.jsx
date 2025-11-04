@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Phone, Mic, PhoneOff, Bot, User } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 
 const AWS_LAMBDA_ENDPOINT = 'https://bgcqzdreehrcyr5yb4kb7ojueq0uhprn.lambda-url.eu-west-1.on.aws/';
 
@@ -19,7 +20,7 @@ const ChatBubble = ({ role, text }) => {
         <div className={`flex items-start gap-3 my-4 ${isUser ? 'justify-end' : 'justify-start'}`}>
             {!isUser && <div className="flex-shrink-0 w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center"><Bot size={22} className="text-white"/></div>}
             <div className={`p-3 rounded-2xl max-w-xs md:max-w-md transition-all duration-300 ${isUser ? 'bg-blue-500 text-white rounded-br-none' : 'bg-white text-gray-800 rounded-bl-none shadow-sm'}`}>
-                <p className="text-sm">{text}</p>
+                <ReactMarkdown className="text-sm">{text}</ReactMarkdown>
             </div>
             {isUser && <div className="flex-shrink-0 w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center"><User size={22} className="text-gray-600"/></div>}
         </div>
