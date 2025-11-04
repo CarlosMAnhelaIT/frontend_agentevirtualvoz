@@ -78,11 +78,11 @@ function Sidebar({ currentView, setView, agentName }) {
   };
 
   return (
-    <aside className="w-64 bg-gray-900 text-white flex flex-col shadow-2xl">
-      <div className="p-6 text-center border-b border-gray-700">
+    <aside className="w-64 bg-white text-gray-800 flex flex-col shadow-2xl border-r border-gray-200">
+      <div className="p-6 text-center border-b border-gray-200">
         <img src={logo} alt="Lyntia Logo" className="w-32 mx-auto mb-4" />
-        <h1 className="text-xl font-bold text-white tracking-wider">Plataforma de Agentes Virtuales</h1>
-        <p className="text-xs text-gray-400">Creador de Agentes</p>
+        <h1 className="text-xl font-bold text-gray-800 tracking-wider">Plataforma de Agentes Virtuales</h1>
+        <p className="text-xs text-gray-500">Creador de Agentes</p>
       </div>
       <nav className="flex-1 p-4 space-y-2">
         <NavButton
@@ -101,9 +101,9 @@ function Sidebar({ currentView, setView, agentName }) {
           label="Incidencias"
         />
       </nav>
-      <div className="p-4 border-t border-gray-700 text-center">
-          <p className="text-sm font-semibold text-white">Agente Actual:</p>
-          <p className="text-sm text-blue-300 truncate">{agentName}</p>
+      <div className="p-4 border-t border-gray-200 text-center">
+          <p className="text-sm font-semibold text-gray-700">Agente Actual:</p>
+          <p className="text-sm text-blue-600 truncate">{agentName}</p>
       </div>
     </aside>
   );
