@@ -113,20 +113,14 @@ const Llamadas = ({ agentName, systemPrompt }) => {
 
             const responseData = await response.json();
 
-            try {
-                const parsedText = JSON.parse(responseData.text);
-                if (parsedText.incidencia_creada === true) {
-                    createIncident(history);
-                    return;
-                }
-            } catch (e) {
-                // Not a JSON response, proceed as normal
-            }
-
             if (responseData.text && responseData.audio) {
                 setHistory(prev => [...prev, { role: 'model', text: responseData.text }]);
                 const audioBlob = await (await fetch(`data:audio/mpeg;base64,${responseData.audio}`)).blob();
                 playAgentResponse(audioBlob);
+
+                if (responseData.incidencia_creada === true) {
+                    createIncident(history);
+                }
             } else {
                 throw new Error("Respuesta inválida del servidor");
             }
