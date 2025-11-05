@@ -89,7 +89,9 @@ const Incidencias = () => {
             {
                 label: 'Número de Incidencias',
                 data: Object.values(incidenciasPorClasificacion),
-                backgroundColor: '#36A2EB',
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1,
             },
         ],
     };
@@ -100,12 +102,32 @@ const Incidencias = () => {
             {
                 label: 'Número de Incidencias',
                 data: Object.values(incidenciasPorFecha),
-                backgroundColor: '#FF6384',
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 2,
+                pointBackgroundColor: 'rgba(255, 99, 132, 1)',
+                pointBorderColor: '#fff',
+                pointHoverRadius: 5,
+                tension: 0.1
             },
         ],
     };
 
-    const chartOptions = (titleText) => ({
+    const doughnutChartOptions = (titleText) => ({
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: true, position: 'bottom' },
+            title: {
+                display: true,
+                text: titleText,
+                color: '#333',
+                font: { size: 16 },
+            },
+        },
+    });
+
+    const barAndLineChartOptions = (titleText) => ({
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
@@ -117,6 +139,22 @@ const Incidencias = () => {
                 font: { size: 16 },
             },
         },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1,
+                },
+                grid: {
+                    drawBorder: false,
+                },
+            },
+            x: {
+                grid: {
+                    display: false,
+                }
+            }
+        }
     });
 
     const getSentimentIcon = (sentiment) => {
@@ -145,16 +183,16 @@ const Incidencias = () => {
             {/* Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                 <ChartCard title="Incidencias por Prioridad">
-                    <Doughnut data={priorityChartData} options={chartOptions('Distribución por Prioridad')} />
+                    <Doughnut data={priorityChartData} options={doughnutChartOptions('Distribución por Prioridad')} />
                 </ChartCard>
                 <ChartCard title="Análisis de Sentimiento Global">
-                    <Doughnut data={sentimentChartData} options={chartOptions('Distribución de Sentimiento')} />
+                    <Doughnut data={sentimentChartData} options={doughnutChartOptions('Distribución de Sentimiento')} />
                 </ChartCard>
                 <ChartCard title="Incidencias por Clasificación">
-                    <Bar data={classificationChartData} options={chartOptions('Distribución por Clasificación')} />
+                    <Bar data={classificationChartData} options={barAndLineChartOptions('Distribución por Clasificación')} />
                 </ChartCard>
                 <ChartCard title="Incidencias por Fecha">
-                    <Line data={dateChartData} options={chartOptions('Distribución por Fecha')} />
+                    <Line data={dateChartData} options={barAndLineChartOptions('Distribución por Fecha')} />
                 </ChartCard>
             </div>
 
