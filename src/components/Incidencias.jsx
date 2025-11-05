@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Bar, Doughnut, Line } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, LineElement } from 'chart.js';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, LineElement, PointElement } from 'chart.js';
 import { Bug, Clock, CheckCircle, AlertCircle, Smile, Meh, Frown } from 'lucide-react';
 
 // Register Chart.js components
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement);
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, LineElement, PointElement);
 
 const Incidencias = () => {
     const [incidencias, setIncidencias] = useState([]);
