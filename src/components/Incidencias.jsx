@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Bar, Doughnut } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
+import { Bar, Doughnut, Line } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, LineElement } from 'chart.js';
 import { Bug, Clock, CheckCircle, AlertCircle, Smile, Meh, Frown } from 'lucide-react';
 
 // Register Chart.js components
@@ -154,7 +154,7 @@ const Incidencias = () => {
                     <Bar data={classificationChartData} options={chartOptions('Distribución por Clasificación')} />
                 </ChartCard>
                 <ChartCard title="Incidencias por Fecha">
-                    <Bar data={dateChartData} options={chartOptions('Distribución por Fecha')} />
+                    <Line data={dateChartData} options={chartOptions('Distribución por Fecha')} />
                 </ChartCard>
             </div>
 
