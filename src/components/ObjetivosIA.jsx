@@ -10,7 +10,7 @@ const FeatureCard = ({ icon, title, description }) => {
                 </div>
                 <h3 className="text-xl font-bold text-gray-800">{title}</h3>
             </div>
-            <p className="text-gray-600">{description}</p>
+            <div className="text-gray-600">{description}</div>
         </div>
     );
 };
@@ -20,22 +20,33 @@ const ObjetivosIA = () => {
         {
             icon: <BrainCircuit size={24} className="text-blue-600" />,
             title: "Análisis de Conversación en Tiempo Real",
-            description: "El agente utiliza un modelo de lenguaje avanzado para entender la intención y el contexto de la conversación en tiempo real, permitiendo un diálogo fluido y natural."
+            description: <p>El agente utiliza un modelo de lenguaje avanzado para entender la intención y el contexto de la conversación en tiempo real, permitiendo un diálogo fluido y natural.</p>
         },
         {
             icon: <ClipboardCheck size={24} className="text-blue-600" />,
             title: "Creación y Gestión de Incidencias",
-            description: "Capacidad para recopilar automáticamente la información necesaria durante la llamada y crear una incidencia estructurada, clasificándola y asignándole una prioridad para una resolución eficiente."
+            description: (
+                <>
+                    <p>Capacidad para recopilar automáticamente la información necesaria durante la llamada y crear una incidencia estructurada. Para ello, el agente te solicitará los siguientes datos:</p>
+                    <ul className="list-disc list-inside mt-2 text-gray-600">
+                        <li>Nombre y Apellidos</li>
+                        <li>Fecha de Nacimiento</li>
+                        <li>Equipo o Servicio Dañado</li>
+                        <li>Fecha del daño</li>
+                        <li>Descripción del Daño</li>
+                    </ul>
+                </>
+            )
         },
         {
             icon: <Smile size={24} className="text-blue-600" />,
             title: "Análisis de Sentimiento",
-            description: "Detecta el estado de ánimo del cliente (Positivo, Neutral, Negativo) en cada turno de la conversación para medir la satisfacción y permitir una respuesta más empática."
+            description: <p>Detecta el estado de ánimo del cliente (Positivo, Neutral, Negativo) en cada turno de la conversación para medir la satisfacción y permitir una respuesta más empática.</p>
         },
         {
             icon: <BarChart3 size={24} className="text-blue-600" />,
             title: "Métricas e Informes Avanzados",
-            description: "Proporciona un panel de control con métricas clave sobre las incidencias, como el volumen, la clasificación, la prioridad y el sentimiento general, para una toma de decisiones informada."
+            description: <p>Proporciona un panel de control con métricas clave sobre las incidencias, como el volumen, la clasificación, la prioridad y el sentimiento general, para una toma de decisiones informada.</p>
         }
     ];
 

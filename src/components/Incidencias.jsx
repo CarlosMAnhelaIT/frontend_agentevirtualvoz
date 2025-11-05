@@ -49,6 +49,18 @@ const Incidencias = () => {
         return acc;
     }, {});
 
+    const incidenciasPorClasificacion = incidencias.reduce((acc, inc) => {
+        const clasificacion = inc.clasificacion || 'N/A';
+        acc[clasificacion] = (acc[clasificacion] || 0) + 1;
+        return acc;
+    }, {});
+
+    const incidenciasPorFecha = incidencias.reduce((acc, inc) => {
+        const fecha = new Date(inc.createdAt).toLocaleDateString() || 'N/A';
+        acc[fecha] = (acc[fecha] || 0) + 1;
+        return acc;
+    }, {});
+
     // Chart Data
     const priorityChartData = {
         labels: Object.keys(incidenciasPorPrioridad),
@@ -67,6 +79,28 @@ const Incidencias = () => {
             {
                 data: Object.values(incidenciasPorSentimiento),
                 backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'], // Red, Green, Yellow
+            },
+        ],
+    };
+
+    const classificationChartData = {
+        labels: Object.keys(incidenciasPorClasificacion),
+        datasets: [
+            {
+                label: 'Número de Incidencias',
+                data: Object.values(incidenciasPorClasificacion),
+                backgroundColor: '#36A2EB',
+            },
+        ],
+    };
+
+    const dateChartData = {
+        labels: Object.keys(incidenciasPorFecha),
+        datasets: [
+            {
+                label: 'Número de Incidencias',
+                data: Object.values(incidenciasPorFecha),
+                backgroundColor: '#FF6384',
             },
         ],
     };
@@ -115,6 +149,12 @@ const Incidencias = () => {
                 </ChartCard>
                 <ChartCard title="Análisis de Sentimiento Global">
                     <Doughnut data={sentimentChartData} options={chartOptions('Distribución de Sentimiento')} />
+                </ChartCard>
+                <ChartCard title="Incidencias por Clasificación">
+                    <Bar data={classificationChartData} options={chartOptions('Distribución por Clasificación')} />
+                </ChartCard>
+                <ChartCard title="Incidencias por Fecha">
+                    <Bar data={dateChartData} options={chartOptions('Distribución por Fecha')} />
                 </ChartCard>
             </div>
 
