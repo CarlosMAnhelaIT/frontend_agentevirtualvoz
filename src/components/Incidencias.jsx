@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Bar, Doughnut, Line } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, LineElement, PointElement } from 'chart.js';
-import { Bug, Clock, CheckCircle, AlertCircle, Smile, Meh, Frown } from 'lucide-react';
+import { Bar, Doughnut } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
 
 // Register Chart.js components
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, LineElement, PointElement);
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement);
 
 const Incidencias = () => {
     const [incidencias, setIncidencias] = useState([]);
@@ -104,11 +103,7 @@ const Incidencias = () => {
                 data: Object.values(incidenciasPorFecha),
                 backgroundColor: 'rgba(255, 99, 132, 0.2)',
                 borderColor: 'rgba(255, 99, 132, 1)',
-                borderWidth: 2,
-                pointBackgroundColor: 'rgba(255, 99, 132, 1)',
-                pointBorderColor: '#fff',
-                pointHoverRadius: 5,
-                tension: 0.1
+                borderWidth: 1,
             },
         ],
     };
@@ -192,7 +187,7 @@ const Incidencias = () => {
                     <Bar data={classificationChartData} options={barAndLineChartOptions('Distribución por Clasificación')} />
                 </ChartCard>
                 <ChartCard title="Incidencias por Fecha">
-                    <Line data={dateChartData} options={barAndLineChartOptions('Distribución por Fecha')} />
+                    <Bar data={dateChartData} options={barAndLineChartOptions('Distribución por Fecha')} />
                 </ChartCard>
             </div>
 
