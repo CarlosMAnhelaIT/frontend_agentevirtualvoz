@@ -38,12 +38,33 @@ const Llamadas = ({ agentName, systemPrompt, setLiveSentiment }) => {
     const [incidentCreated, setIncidentCreated] = useState(false);
     const audioPlayerRef = useRef(new Audio());
     const transcriptContainerRef = useRef(null);
+    const mediaRecorderRef = useRef(null);
+    const audioChunksRef = useRef([]);
 
     useEffect(() => {
         if (transcriptContainerRef.current) {
             transcriptContainerRef.current.scrollTop = transcriptContainerRef.current.scrollHeight;
         }
     }, [history]);
+
+    const setupMediaRecorder = (stream) => {
+        const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+
+        recorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+                audioChunksRef.current.push(event.data);
+            }
+        };
+
+        recorder.onstop = () => {
+            setAgentStatus('Pensando...');
+            const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+            sendAudioToBackend(audioBlob);
+            audioChunksRef.current = []; // Limpiar para la próxima grabación
+        };
+
+        mediaRecorderRef.current = recorder;
+    };
 
     useEffect(() => {
         if (!SpeechRecognition) {
@@ -54,21 +75,24 @@ const Llamadas = ({ agentName, systemPrompt, setLiveSentiment }) => {
         recognition.onstart = () => {
             setIsListening(true);
             setAgentStatus('Escuchando...');
+            if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'inactive') {
+                mediaRecorderRef.current.start();
+            }
         };
 
         recognition.onend = () => {
             setIsListening(false);
             if (callStatus === 'active') setAgentStatus('Lista para hablar');
+            if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+                mediaRecorderRef.current.stop();
+            }
         };
 
         recognition.onresult = (event) => {
             const transcript = event.results[event.results.length - 1][0].transcript.trim();
             if (transcript) {
-                setAgentStatus('Pensando...');
                 const newUserMessage = { role: 'user', text: transcript };
-                const newHistory = [...history, newUserMessage];
-                setHistory(newHistory);
-                sendTextToBackend(transcript, newHistory);
+                setHistory(prev => [...prev, newUserMessage]);
             }
         };
 
@@ -79,19 +103,30 @@ const Llamadas = ({ agentName, systemPrompt, setLiveSentiment }) => {
 
     }, [callStatus, history]);
 
-    const handleCall = () => {
+    const handleCall = async () => {
         if (!SpeechRecognition) {
             alert("Tu navegador no soporta la API de reconocimiento de voz. Por favor, usa Chrome o Edge.");
             return;
         }
-        setHistory([]);
-        setCallStatus('active');
-        setAgentStatus('Lista para hablar');
-        setLiveSentiment('Neutral'); // Reset sentiment on new call
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            setupMediaRecorder(stream);
+            setHistory([]);
+            setCallStatus('active');
+            setAgentStatus('Lista para hablar');
+            setLiveSentiment('Neutral');
+        } catch (error) {
+            console.error("Error al acceder al micrófono:", error);
+            setAgentStatus('Error de Mic');
+            alert("No se pudo acceder al micrófono. Por favor, verifica los permisos en tu navegador.");
+        }
     };
 
     const handleHangUp = () => {
         if (isListening) recognition.stop();
+        if (mediaRecorderRef.current && mediaRecorderRef.current.stream) {
+            mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+        }
         setCallStatus('ended');
         setAgentStatus('Llamada finalizada');
         setTimeout(() => {
@@ -105,19 +140,28 @@ const Llamadas = ({ agentName, systemPrompt, setLiveSentiment }) => {
         else recognition.start();
     };
 
-    const sendTextToBackend = async (text, currentHistory) => {
+    const blobToBase64 = (blob) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result.split(',')[1]);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
+    };
+
+    const sendAudioToBackend = async (audioBlob) => {
         try {
+            const audioBase64 = await blobToBase64(audioBlob);
             const response = await fetch(AWS_LAMBDA_ENDPOINT, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text, history: currentHistory, systemPrompt }),
+                body: JSON.stringify({ audio: audioBase64, history }),
             });
 
             if (!response.ok) throw new Error(`Server error: ${response.status}`);
 
             const responseData = await response.json();
 
-            // Lift the sentiment state up to the parent component
             if (responseData.sentiment) {
                 setLiveSentiment(responseData.sentiment);
             }
