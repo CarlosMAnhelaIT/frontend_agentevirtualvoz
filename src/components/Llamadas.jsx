@@ -65,8 +65,9 @@ const Llamadas = ({ agentName, systemPrompt, setLiveSentiment }) => {
             const transcript = event.results[event.results.length - 1][0].transcript.trim();
             if (transcript) {
                 const newUserMessage = { role: 'user', text: transcript };
-                setHistory(prev => [...prev, newUserMessage]);
-                sendTextToBackend(transcript); // Enviar texto al backend
+                const updatedHistory = [...history, newUserMessage];
+                setHistory(updatedHistory);
+                sendTextToBackend(transcript, updatedHistory); // Enviar texto y el historial actualizado
             }
         };
 
@@ -113,13 +114,13 @@ const Llamadas = ({ agentName, systemPrompt, setLiveSentiment }) => {
         else recognition.start();
     };
 
-    const sendTextToBackend = async (text) => {
+    const sendTextToBackend = async (text, currentHistory) => {
         setAgentStatus('Pensando...');
         try {
             const response = await fetch(AWS_LAMBDA_ENDPOINT, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: text, history: history }), // Send text and history
+                body: JSON.stringify({ text: text, history: currentHistory.slice(0, -1) }), // Enviar historial sin el último mensaje del usuario
             });
 
             if (!response.ok) throw new Error(`Server error: ${response.status}`);
